@@ -46,3 +46,21 @@ def add_to_vector_store(file_path: str, case_id: str):
         metadatas=metadata_tags,
         ids=chunk_ids
     )
+
+def query_vector_store(query_text: str, case_id: str, n_results: int = 3) -> list[str]:
+
+    """FR-3.3"""
+    collection = chroma_client.get_or_create_collection(name="sherlock_cases")
+    
+    # Query the collection
+    results = collection.query(
+        query_texts=[query_text],
+        n_results=n_results,
+        where={"case_id": case_id}
+    )
+    
+    # Return a list of lists for documents
+    if results and results.get("documents"):
+        return results["documents"][0]
+    
+    return []

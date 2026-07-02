@@ -52,3 +52,38 @@ class Test_FR_3_2(unittest.TestCase):
                 collection.delete(where={"case_id": case_id})
             except Exception:
                 pass
+
+class Test_FR_3_3(unittest.TestCase):
+
+    def test_similarity_search_and_retrieval(self):
+        """FR-3.3: Verify that querying the database returns the most relevant chunks."""
+        filename = "temp_fr33_test.txt"
+        case_id = "test_case_777"
+        
+        with open(filename, "w", encoding="utf-8") as f:
+            f.write(
+                "Clue 1: The missing diamond was hidden inside the antique grandfather clock. "
+                "Clue 2: The gardener was planting red roses near the front gate all morning."
+            )
+
+        try:
+            # Ingest the file with FR-3.2
+            from rag.rag_engine import add_to_vector_store, query_vector_store
+            add_to_vector_store(filename, case_id)
+            
+            # Query something specific
+            retrieved_chunks = query_vector_store("Where is the missing diamond?", case_id, n_results=1)
+            
+            self.assertGreater(len(retrieved_chunks), 0)
+            self.assertIn("grandfather clock", retrieved_chunks[0])
+            
+        finally:
+            if os.path.exists(filename):
+                os.remove(filename)
+                
+            from rag.rag_engine import chroma_client
+            try:
+                collection = chroma_client.get_collection(name="sherlock_cases")
+                collection.delete(where={"case_id": case_id})
+            except Exception:
+                pass
