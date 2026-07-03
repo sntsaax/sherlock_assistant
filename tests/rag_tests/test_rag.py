@@ -1,7 +1,16 @@
 import unittest
 import os
-from rag.rag_engine import load_and_chunk_document
-from rag.rag_engine import add_to_vector_store
+from dotenv import load_dotenv
+from rag.rag_engine import (
+    load_and_chunk_document,
+    add_to_vector_store,
+    query_vector_store,
+    generate_augmented_prompt,
+    generate_sherlock_answer,
+    chroma_client
+)
+
+load_dotenv()
 
 class Test_FR_3_1(unittest.TestCase):
 
@@ -36,7 +45,6 @@ class Test_FR_3_2(unittest.TestCase):
             add_to_vector_store(filename, case_id)
             
             # Reach directly into ChromaDB
-            from rag.rag_engine import chroma_client
             collection = chroma_client.get_collection(name="sherlock_cases")
             
             results = collection.get(where={"case_id": case_id})
@@ -68,7 +76,6 @@ class Test_FR_3_3(unittest.TestCase):
 
         try:
             # Ingest the file with FR-3.2
-            from rag.rag_engine import add_to_vector_store, query_vector_store
             add_to_vector_store(filename, case_id)
             
             # Query something specific
@@ -81,7 +88,6 @@ class Test_FR_3_3(unittest.TestCase):
             if os.path.exists(filename):
                 os.remove(filename)
                 
-            from rag.rag_engine import chroma_client
             try:
                 collection = chroma_client.get_collection(name="sherlock_cases")
                 collection.delete(where={"case_id": case_id})
@@ -100,7 +106,6 @@ class Test_FR_3_4(unittest.TestCase):
 
         try:
             # Ingest the test file with FR-3.2
-            from rag.rag_engine import add_to_vector_store, generate_augmented_prompt
             add_to_vector_store(filename, case_id)
             
             # Generate the prompt for the user's query
@@ -114,7 +119,39 @@ class Test_FR_3_4(unittest.TestCase):
             if os.path.exists(filename):
                 os.remove(filename)
                 
-            from rag.rag_engine import chroma_client
+            try:
+                collection = chroma_client.get_collection(name="sherlock_cases")
+                collection.delete(where={"case_id": case_id})
+            except Exception:
+                pass
+
+class Test_FR_3_5(unittest.TestCase):
+
+    def test_llm_answer_generation(self):
+        """FR-3.5: Verify that the LLM processes the prompt and yields a coherent answer."""
+        # Checking for API Key in .env
+        if not os.getenv("OPENAI_API_KEY"):
+            self.skipTest("Skipping FR-3.5 because OPENAI_API_KEY is not set in environment or .env file")
+
+        filename = "temp_fr35_test.txt"
+        case_id = "test_case_111"
+        
+        with open(filename, "w", encoding="utf-8") as f:
+            f.write("Evidence item: The broken window latches indicate entry was forced from the outside.")
+
+        try:
+            add_to_vector_store(filename, case_id)
+            
+            # Execute the pipeline up to the LLM response
+            answer = generate_sherlock_answer("How did the intruder get in?", case_id)
+            
+            self.assertIsInstance(answer, str)
+            self.assertGreater(len(answer), 0)
+            
+        finally:
+            if os.path.exists(filename):
+                os.remove(filename)
+                
             try:
                 collection = chroma_client.get_collection(name="sherlock_cases")
                 collection.delete(where={"case_id": case_id})

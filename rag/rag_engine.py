@@ -1,7 +1,10 @@
 import os
 from pypdf import PdfReader
 import chromadb
+from openai import OpenAI
+from dotenv import load_dotenv
 
+load_dotenv()
 chroma_client = chromadb.PersistentClient(path="./chroma_db")
 
 def load_and_chunk_document(file_path: str) -> list[str]:
@@ -93,3 +96,24 @@ def generate_augmented_prompt(query_text: str, case_id: str) -> str:
         SHERLOCK'S ANALYSIS:"""
     
     return prompt
+
+from openai import OpenAI
+
+def generate_sherlock_answer(query_text: str, case_id: str) -> str:
+    
+    """FR-3.5"""
+    # Generate the prompt from FR-3.4
+    full_prompt = generate_augmented_prompt(query_text, case_id)
+    
+    # Initialize the client
+    client = OpenAI()
+    
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",  # As in Thesis, cheaper
+        messages=[
+            {"role": "user", "content": full_prompt}
+        ],
+        temperature=0.0  # 0 for strict analytical responses
+    )
+    
+    return response.choices[0].message.content
