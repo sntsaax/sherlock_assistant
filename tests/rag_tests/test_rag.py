@@ -1,7 +1,7 @@
 import unittest
 import os
 from dotenv import load_dotenv
-from rag.rag_engine import (
+from src.rag.rag_engine import (
     load_and_chunk_document,
     add_to_vector_store,
     query_vector_store,
