@@ -87,3 +87,36 @@ class Test_FR_3_3(unittest.TestCase):
                 collection.delete(where={"case_id": case_id})
             except Exception:
                 pass
+
+class Test_FR_3_4(unittest.TestCase):
+
+    def test_context_augmented_prompt_generation(self):
+        """FR-3.4: Verify the constructed prompt injects context and rules correctly."""
+        filename = "temp_fr34_test.txt"
+        case_id = "test_case_555"
+        
+        with open(filename, "w", encoding="utf-8") as f:
+            f.write("Evidence item: The footprint found in the mud belongs to a size 11 Goodyear boot.")
+
+        try:
+            # Ingest the test file with FR-3.2
+            from rag.rag_engine import add_to_vector_store, generate_augmented_prompt
+            add_to_vector_store(filename, case_id)
+            
+            # Generate the prompt for the user's query
+            final_prompt = generate_augmented_prompt("What size was the boot footprint?", case_id)
+            
+            self.assertIn("You are Sherlock, an expert investigative digital assistant.", final_prompt)
+            self.assertIn("size 11 Goodyear boot", final_prompt)
+            self.assertIn("What size was the boot footprint?", final_prompt)
+            
+        finally:
+            if os.path.exists(filename):
+                os.remove(filename)
+                
+            from rag.rag_engine import chroma_client
+            try:
+                collection = chroma_client.get_collection(name="sherlock_cases")
+                collection.delete(where={"case_id": case_id})
+            except Exception:
+                pass

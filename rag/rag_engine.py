@@ -64,3 +64,32 @@ def query_vector_store(query_text: str, case_id: str, n_results: int = 3) -> lis
         return results["documents"][0]
     
     return []
+
+def generate_augmented_prompt(query_text: str, case_id: str) -> str:
+    
+    """FR-3.4"""
+    # FR-3.3 to find the matching context blocks
+    retrieved_chunks = query_vector_store(query_text, case_id, n_results=3)
+    
+    # Join the blocks
+    context_str = "\n---\n".join(retrieved_chunks) if retrieved_chunks else "No relevant evidence found."
+    
+    # 3. Build the prompt
+    prompt = f"""You are Sherlock, an expert investigative digital assistant. 
+        Your goal is to answer the user's question using ONLY the provided case evidence below. 
+
+        CRITICAL RULES:
+        1. Ground your answer strictly in the provided evidence.
+        2. If the evidence does not contain the answer, state clearly: "I don't have enough evidence to answer that."
+        3. Do not make up facts, assumptions, or external details.
+
+        ---
+        RETRIEVED EVIDENCE:
+        {context_str}
+        ---
+
+        USER QUESTION: {query_text}
+
+        SHERLOCK'S ANALYSIS:"""
+    
+    return prompt
