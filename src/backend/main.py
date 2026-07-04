@@ -72,3 +72,33 @@ async def upload_document(
 
     # Return the metadata object to UI
     return metadata_record
+
+
+@app.get("/documents", status_code=status.HTTP_200_OK)
+async def get_all_documents():
+    """FR-2.2: Retrieve"""
+    return metadata_db
+
+@app.delete("/documents/{case_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_document(case_id: str):
+    """FR-2.2: Delete"""
+    global metadata_db
+    
+    # Search for the record
+    record_to_delete = None
+    for record in metadata_db:
+        if record["id"] == case_id:
+            record_to_delete = record
+            break
+            
+    # If it doesn't exist, fail
+    if not record_to_delete:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Case with ID {case_id} not found."
+        )
+        
+    # Remove from database array
+    metadata_db.remove(record_to_delete)
+    
+    return
