@@ -1,9 +1,10 @@
 import streamlit as st
 import requests
+import os
 
 st.set_page_config(page_title="Sherlock Assistant", layout="wide")
 
-BACKEND_URL = "http://127.0.0.1:8000"
+BACKEND_URL = os.getenv("BACKEND_URL", "http://127.0.0.1:8000")
 
 # Helper for fetching cases from the backend
 def get_backend_cases():

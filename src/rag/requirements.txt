@@ -1,3 +1,0 @@
-chromadb==0.4.24
-openai==1.14.1
-pypdf==4.1.0
