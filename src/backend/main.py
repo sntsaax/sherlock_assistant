@@ -2,7 +2,7 @@ import os
 import uuid
 import shutil
 from datetime import datetime
-from fastapi import FastAPI, UploadFile, Form, HTTPException, status
+from fastapi import FastAPI, UploadFile, File, HTTPException, status
 from pydantic import BaseModel
 
 # vector store function from rag_engine.py
@@ -20,8 +20,8 @@ class QueryRequest(BaseModel):
 
 @app.post("/documents", status_code=status.HTTP_201_CREATED)
 async def upload_document(
-    subject: str = Form(...), 
-    file: UploadFile = Form(...)
+    subject: str = File(...), 
+    file: UploadFile = File(...)
 ):
     # Reject invalid file extensions format (FR-2.1)
     if not (file.filename.endswith('.pdf') or file.filename.endswith('.txt')):
@@ -49,8 +49,8 @@ async def upload_document(
     try:
         # Save file to disk temporarily
         with open(file_path, "wb") as buffer:
-            shutil_copy = file.file.read()
-            buffer.write(shutil_copy)
+            content = await file.read()
+            buffer.write(content)
             
         add_to_vector_store(file_path, generated_id)
         
