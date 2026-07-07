@@ -44,6 +44,43 @@ if page == "Home Page":
 elif page == "List of Cases":
     st.title("Case Library Dashboard")
     st.write("Active system memory records")
+
+# (FR-1.4) Case Library Dashboard
+
+    cases = get_backend_cases()
+    
+    if cases is None:
+        st.error("Cannot connect to backend server. Ensure Uvicorn is running.")
+    elif not cases:
+        st.info("System memory workspace inventory is currently empty. Go upload an evidence file!")
+    else:
+        # Loop through each item in backend
+        for record in cases:
+            col1, col2 = st.columns([5, 1])
+            
+            with col1:
+                # Displays details
+                st.markdown(f"### 📄 `{record['filename']}`")
+                st.markdown(
+                    f"**Subject:** {record['subject']} | "
+                    f"**Date Ingested:** {record['date_added']} | "
+                    f"**Internal ID:** `{record['id']}`"
+                )
+            
+            with col2:
+                # Trigger deletion
+                if st.button("Delete Case", key=record['id']):
+                    try:
+                        res = requests.delete(f"{BACKEND_URL}/documents/{record['id']}")
+                        if res.status_code == 204:
+                            st.success("Case removed!")
+                            st.rerun()
+                        else:
+                            st.error("Failed to delete from inventory.")
+                    except Exception as e:
+                        st.error(f"Network failure: {str(e)}")
+            st.markdown("---")
+
     
 elif page == "Quick Case Submission":
     st.title("Quick Case Submission")
