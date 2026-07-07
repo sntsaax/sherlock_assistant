@@ -5,6 +5,16 @@ st.set_page_config(page_title="Sherlock Assistant", layout="wide")
 
 BACKEND_URL = "http://127.0.0.1:8000"
 
+# Helper for fetching cases from the backend
+def get_backend_cases():
+    try:
+        response = requests.get(f"{BACKEND_URL}/documents")
+        if response.status_code == 200:
+            return response.json()
+    except Exception:
+        return None
+    return []
+
 # FR-1.1: Welcome page
 
 logo_path = "sherlock_logo.png"
@@ -32,9 +42,9 @@ if page == "Home Page":
     st.write("This is the main landing workstation screen.")
 
 elif page == "List of Cases":
-    st.title("List of Cases")
-    st.write("This is the database case inventory library.")
-
+    st.title("Case Library Dashboard")
+    st.write("Active system memory records")
+    
 elif page == "Quick Case Submission":
     st.title("Quick Case Submission")
     st.write("This is where new evidence files are uploaded.")
