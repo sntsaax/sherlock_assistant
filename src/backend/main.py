@@ -3,14 +3,20 @@ import uuid
 import shutil
 from datetime import datetime
 from fastapi import FastAPI, UploadFile, Form, HTTPException, status
+from pydantic import BaseModel
 
 # vector store function from rag_engine.py
-from src.rag.rag_engine import add_to_vector_store
+from src.rag.rag_engine import add_to_vector_store, query_vector_store
 
 app = FastAPI(title="Sherlock Backend - FR-2.1")
 
 # Python list serving as local database table (FR-2.1)
 metadata_db = []
+
+# Pydantic Schema
+class QueryRequest(BaseModel):
+    question: str
+    case_id: str
 
 @app.post("/documents", status_code=status.HTTP_201_CREATED)
 async def upload_document(
