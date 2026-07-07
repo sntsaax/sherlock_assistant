@@ -97,8 +97,6 @@ def generate_augmented_prompt(query_text: str, case_id: str) -> str:
     
     return prompt
 
-from openai import OpenAI
-
 def generate_sherlock_answer(query_text: str, case_id: str) -> str:
     
     """FR-3.5"""

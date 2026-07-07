@@ -2,6 +2,7 @@ import os
 import unittest
 from fastapi.testclient import TestClient
 from src.backend.main import app, metadata_db
+from unittest.mock import patch
 
 class TestBackendIngestion(unittest.TestCase):
     def setUp(self):
@@ -90,4 +91,41 @@ class TestBackendIngestion(unittest.TestCase):
     def test_fr_2_2_delete_document_not_found(self):
         """FR-2.2: Verify deleting a non-existent ID returns a 404 Error."""
         response = self.client.delete("/documents/fake-missing-id")
+        self.assertEqual(response.status_code, 404)
+    
+    @patch("src.backend.main.generate_sherlock_answer")
+    def test_fr_2_3_query_routing_success(self, mock_sherlock_answer):
+        """FR-2.3: Verify query routes correctly and returns bounded text answers."""
+
+        # Seed an active record in local metadata list
+        active_id = "active-case-uuid"
+        metadata_db.append({
+            "id": active_id,
+            "filename": "motive.txt",
+            "subject": "Alibi Check",
+            "date_added": "2026-07-07"
+        })
+        
+        # Tell the mock exactly what text to return
+        mock_sherlock_answer.return_value = "The suspect was confirmed to be at the club during the incident."
+        
+        response = self.client.post(
+            "/query",
+            json={"question": "Where was the suspect?", "case_id": active_id}
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["case_id"], active_id)
+        self.assertEqual(data["answer"], "The suspect was confirmed to be at the club during the incident.")
+        
+        # Verify function parameters
+        mock_sherlock_answer.assert_called_once_with("Where was the suspect?", active_id)
+
+    def test_fr_2_3_query_routing_missing_case(self):
+        """FR-2.3: Verify querying a non-existent case_id returns a 404 Error."""
+        response = self.client.post(
+            "/query",
+            json={"question": "Any updates?", "case_id": "ghost-id-999"}
+        )
         self.assertEqual(response.status_code, 404)

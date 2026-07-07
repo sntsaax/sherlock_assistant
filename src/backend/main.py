@@ -6,7 +6,7 @@ from fastapi import FastAPI, UploadFile, Form, HTTPException, status
 from pydantic import BaseModel
 
 # vector store function from rag_engine.py
-from src.rag.rag_engine import add_to_vector_store, query_vector_store
+from src.rag.rag_engine import add_to_vector_store, generate_sherlock_answer
 
 app = FastAPI(title="Sherlock Backend - FR-2.1")
 
@@ -67,7 +67,7 @@ async def upload_document(
         if os.path.exists(file_path):
             os.remove(file_path)
 
-    # 5. Save the metadata record into local table
+    # Save the metadata record into local table
     metadata_record = {
         "id": generated_id,
         "filename": file.filename,
@@ -108,3 +108,33 @@ async def delete_document(case_id: str):
     metadata_db.remove(record_to_delete)
     
     return
+
+
+@app.post("/query", status_code=status.HTTP_200_OK)
+async def route_detective_query(payload: QueryRequest):
+    """FR-2.3: Route detective question"""
+    
+    # Verify the case exists
+    case_exists = any(record["id"] == payload.case_id for record in metadata_db)
+    if not case_exists:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Query failed: Case ID {payload.case_id} does not exist in inventory."
+        )
+        
+    try:
+        # RAG loop
+        ai_analysis = generate_sherlock_answer(payload.question, payload.case_id)
+        
+        # Return the response
+        return {
+            "case_id": payload.case_id,
+            "question": payload.question,
+            "answer": ai_analysis
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"RAG Engine execution failed: {str(e)}"
+        )
