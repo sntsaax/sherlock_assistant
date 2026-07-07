@@ -1,0 +1,30 @@
+CASE FILE: #2026-XF-99102
+CONFIDENTIAL // INTERNAL AFFAIRS // RESTRICTED ACCESS
+VÄXJÖ POLISDISTRIKT // KRONOBERG DIVISION
+
+DATE REPORTED: July 7, 2026
+INCIDENT TYPE: High-Value Art Theft & Digital Ledger Tampering
+PRIMARY SUSPECT: Lindqvist, Lukas
+EMPLOYMENT STATUS: Lead Archivist, Kronoberg Cultural Museum (Wanted for Questioning)
+
+[CASE OVERVIEW]
+On the night of July 6, 2026, during a scheduled maintenance cycle of the museum's security matrix, three mid-19th-century Småland silver artifacts and a rare local cartographic manuscript vanished from the vault. Concurrently, the facility's internal database ledger was altered to erase tracking barcodes and delete CCTV logs from the server room. Access logs indicate the administrative bypass key assigned to Lukas Lindqvist was utilized to execute the system override.
+
+[SUSPECT PROFILE]
+- Name: Lukas Lindqvist
+- DOB: September 23, 1989
+- Last Known Address: Sandgärdsgatan 12, Växjö, Sweden
+- Security Clearance: Level 5 (Full Archival & Technical Access)
+
+[EVIDENCE LOG]
+1. Item #01: Smart-lock transit data recording Suspect's digital key fob crossing into the subterranean historical vaults at 23:42:11, approximately two hours after the museum closed.
+2. Item #02: A localized network packet dump showing an unauthorized SSH connection originating from a personal terminal at Sandgärdsgatan 12, forcing a root-level deletion of video assets.
+3. Item #03: A commercial shipping manifest recovered from the suspect's workbench, detailing a pending overnight cargo dispatch to an unregistered freight forwarder in Gothenburg.
+
+[WITNESS STATEMENT SUMMARY]
+Elena Berg (Security Supervisor): "Lukas stayed late pretending he was finalizing the digital cataloging project before the summer exhibition. He asked me specifically if the backup generators would affect the local loop alarms during the maintenance window. I trusted him—he's been here for seven years."
+
+[STATUS]
+Suspect's current whereabouts are unknown. A local alert has been issued across Kronoberg County. A physical search of his Växjö residence is underway following a warrant issued early this afternoon.
+
+INVESTIGATING OFFICER: Det. Inspector K. Sjöberg, Badge #8839
