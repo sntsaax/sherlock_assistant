@@ -37,9 +37,63 @@ with st.sidebar:
     )
 
 # Render content based on selected page
+
 if page == "Home Page":
-    st.title("Home Page")
-    st.write("This is the main landing workstation screen.")
+    st.title("Interactive Chat Feed")
+
+# FR-1.5 + 1.6: Interactive Chat Feed (Home Page View)
+
+    cases = get_backend_cases()
+    
+    if cases is None:
+        st.error("Cannot connect to backend server. Ensure Uvicorn is running.")
+    elif not cases:
+        st.warning("No active case files loaded. Go to 'Quick Case Submission' to upload evidence first.")
+    else:
+        # Context binding selection
+        options_map = {f"{c['filename']} (ID: {c['id'][:8]})": c['id'] for c in cases}
+        selected_label = st.selectbox("Select Active Case Context:", list(options_map.keys()))
+        selected_case_id = options_map[selected_label]
+        
+        st.write("---")
+        
+        # Initialize in-memory session chat history list if it doesn't exist
+        if "chat_history" not in st.session_state:
+            st.session_state.chat_history = []
+            
+        # Scrollable chat window display container
+        chat_container = st.container()
+        with chat_container:
+            for chat in st.session_state.chat_history:
+                with st.chat_message(chat["role"]):
+                    st.write(chat["content"])
+                    
+        # Main text input box
+        if user_query := st.chat_input("Ask Sherlock a question about this case..."):
+            
+            # Display user message in feed
+            with chat_container:
+                with st.chat_message("user"):
+                    st.write(user_query)
+            st.session_state.chat_history.append({"role": "user", "content": user_query})
+            
+            # Forward the data to backend route (POST /query)
+            try:
+                payload = {"question": user_query, "case_id": selected_case_id}
+                res = requests.post(f"{BACKEND_URL}/query", json=payload)
+                
+                if res.status_code == 200:
+                    answer = res.json().get("answer", "")
+                    
+                    # Display the generated answer response in feed
+                    with chat_container:
+                        with st.chat_message("assistant"):
+                            st.write(answer)
+                    st.session_state.chat_history.append({"role": "assistant", "content": answer})
+                else:
+                    st.error("Backend error analyzing your question.")
+            except Exception as e:
+                st.error(f"Failed to communicate with RAG engine: {str(e)}")
 
 elif page == "List of Cases":
     st.title("Case Library Dashboard")
